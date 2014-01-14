@@ -2,6 +2,7 @@
 
 namespace nineinchnick\usr;
 
+use nineinchnick\usr\models\BasePasswordForm;
 use Yii;
 
 /**
