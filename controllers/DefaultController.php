@@ -2,7 +2,10 @@
 
 namespace nineinchnick\usr\controllers;
 
+use nineinchnick\usr\components\ActivatedIdentityInterface;
+use nineinchnick\usr\components\PasswordHistoryIdentityInterface;
 use Yii;
+use yii\helpers\Security;
 use yii\web\BadRequestHttpException;
 use yii\web\AccessDeniedHttpException;
 
@@ -241,7 +244,11 @@ class DefaultController extends UsrController
 			}
 			if ($model->validate() && $passwordForm->validate()) {
 				$trx = Yii::$app->db->beginTransaction();
-				if (!$model->save() || !$passwordForm->resetPassword($model->getIdentity())) {
+				$usePasswordHistory = $model->getIdentity() instanceof PasswordHistoryIdentityInterface;
+				if (!$usePasswordHistory) {
+					$model->getIdentity()->password = Security::generatePasswordHash($passwordForm->newPassword);
+				}
+				if (!$model->save() || ($usePasswordHistory && !$passwordForm->resetPassword($model->getIdentity()))) {
 					$trx->rollback();
 					Yii::$app->session->setFlash('error', Yii::t('usr', 'Failed to register a new user.').' '.Yii::t('usr', 'Try again or contact the site administrator.'));
 				} else {
@@ -253,7 +260,7 @@ class DefaultController extends UsrController
 							Yii::$app->session->setFlash('error', Yii::t('usr', 'Failed to send an email.').' '.Yii::t('usr', 'Try again or contact the site administrator.'));
 						}
 					}
-					if ($model->getIdentity()->isActive()) {
+					if (!($model->getIdentity() instanceof ActivatedIdentityInterface) || $model->getIdentity()->isActive()) {
 						if ($model->login()) {
 							return $this->afterLogin();
 						} else {

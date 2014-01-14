@@ -10,7 +10,7 @@ abstract class UsrController extends \yii\web\Controller
 	 * Sends out an email containing instructions and link to the email verification
 	 * or password recovery page, containing an activation key.
 	 * @param CFormModel $model it must have a getIdentity() method
-	 * @param strign $mode 'recovery', 'verify' or 'oneTimePassword'
+	 * @param string $mode 'recovery', 'verify' or 'oneTimePassword'
 	 * @return boolean if sending the email succeeded
 	 */
 	public function sendEmail(\yii\base\Model $model, $mode)
